@@ -1,0 +1,17 @@
+{
+  "name": "restful",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Hcode Treinamentos"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/EdGFischer/RESTfull-API-com-Restify",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

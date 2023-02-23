@@ -1,6 +1,6 @@
 class User {
 
-    constructor(name, gender, birth, country, email, password, photo, admin){
+    constructor(name, gender, birth, country, email, password, photo, admin) {
 
         this._id;
         this._name = name;
@@ -15,15 +15,15 @@ class User {
 
     }
 
-    get id(){
+    get id() {
         return this._id;
     }
 
-    get register(){
+    get register() {
         return this._register;
     }
 
-    get name(){
+    get name() {
         return this._name;
     }
 
@@ -55,24 +55,24 @@ class User {
         return this._admin;
     }
 
-    set photo(value){
+    set photo(value) {
         this._photo = value;
     }
 
-    loadFromJSON(json){
+    loadFromJSON(json) {
 
-        for (let name in json){
-            
-            switch(name){
+        for (let name in json) {
+
+            switch (name) {
 
                 case '_register':
                     this[name] = new Date(json[name]);
-                break;
+                    break;
                 default:
-                    this[name] = json[name];
+                    if (name.substring(0, 1) === '_') this[name] = json[name];
 
             }
-            
+
 
         }
 
@@ -80,78 +80,59 @@ class User {
 
     static getUsersStorage() {
 
-        let users = [];
-
-        if (localStorage.getItem("users")) {
-
-            users = JSON.parse(localStorage.getItem("users"));
-
-        }
-
-        return users;
+        return Fetch.get(`/users`)
 
     }
 
-    getNewID(){
+    toJSON() {
 
-        let usersID = parseInt(localStorage.getItem("usersID"));
+        let json = {};
 
-        if (!usersID > 0) usersID = 0;
+        Object.keys(this).forEach(key => {
 
-        usersID++;
-
-        localStorage.setItem("usersID", usersID);
-
-        return usersID;
-
-    }
-
-    save(){
-
-        let users = User.getUsersStorage();
-
-        if (this.id > 0) {
-            
-            users.map(u=>{
-
-                if (u._id == this.id) {
-
-                    Object.assign(u, this);
-
-                }
-
-                return u;
-
-            });
-
-        } else {
-
-            this._id = this.getNewID();
-
-            users.push(this);
-
-        }
-
-        localStorage.setItem("users", JSON.stringify(users));
-
-    }
-
-    remove(){
-
-        let users = User.getUsersStorage();
-
-        users.forEach((userData, index)=>{
-
-            if (this._id == userData._id) {
-
-                users.splice(index, 1);
-
-            }
+            if (this[key] !== undefined) json[key] = this[key];
 
         });
 
-        localStorage.setItem("users", JSON.stringify(users));
+        return json;
 
+    }
+
+    save() {
+
+        return new Promise((resolve, reject) => {
+
+            let promise;
+
+            if (this.id) {
+
+                promise = Fetch.put(`/users/${this.id}`, this.toJSON());
+
+            } else {
+
+                promise = Fetch.post(`/users`, this.toJSON());
+
+            }
+
+            promise.then(data => {
+
+                this.loadFromJSON(data);
+
+                resolve(this);
+
+            }).catch(e => {
+
+                reject(e);
+
+            });
+
+        });
+
+    }
+
+    remove() {
+
+            return Fetch.delete(`/users/${this.id}`)
     }
 
 }
